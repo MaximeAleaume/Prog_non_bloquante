@@ -1,18 +1,20 @@
 package fr.wcs.programmationnonbloquante;
 
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-
-
-import static android.os.SystemClock.sleep;
+import static android.widget.Toast.LENGTH_LONG;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -44,43 +46,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button8.setOnClickListener(this);
         button9.setOnClickListener(this);
 
-        TextView floorCount = findViewById(R.id.floor_count);
 
     }
+
     private boolean isLiftMoving = false;
     private int currentFloor = 0;
 
     @Override
-    public void onClick(View v){
-        switch(v.getId()){
-            case R.id.button0 :
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.button0:
                 goToFloor(0);
                 break;
-            case R.id.button1 :
+            case R.id.button1:
                 goToFloor(1);
                 break;
-            case R.id.button2 :
+            case R.id.button2:
                 goToFloor(2);
                 break;
-            case R.id.button3 :
+            case R.id.button3:
                 goToFloor(3);
                 break;
-            case R.id.button4 :
+            case R.id.button4:
                 goToFloor(4);
                 break;
-            case R.id.button5 :
+            case R.id.button5:
                 goToFloor(5);
                 break;
-            case R.id.button6 :
+            case R.id.button6:
                 goToFloor(6);
                 break;
-            case R.id.button7 :
+            case R.id.button7:
                 goToFloor(7);
                 break;
-            case R.id.button8 :
+            case R.id.button8:
                 goToFloor(8);
                 break;
-            case R.id.button9 :
+            case R.id.button9:
                 goToFloor(9);
                 break;
             default:
@@ -99,16 +101,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void moveNextFloor(int floor) {
         if (floor != currentFloor) {
             isLiftMoving = true;
-            waitForIt();
             currentFloor = (floor > currentFloor) ? currentFloor + 1 : currentFloor - 1;
-            TextView floorCount = (TextView) findViewById(R.id.floor_count);
-            floorCount.setText(String.valueOf(currentFloor));
+            waitForIt(currentFloor);
+
             moveNextFloor(floor);
         }
     }
 
-    private void waitForIt() {
+    private void waitForIt(int currentFloor) {
         MoveLift mMoveLift = new MoveLift();
-        mMoveLift.execute();
+        mMoveLift.execute(currentFloor);
+    }
+
+
+    private class MoveLift extends AsyncTask<Integer, Void, Integer> {
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+
+        @Override
+        protected Integer doInBackground(Integer... integers) {
+
+            int theActualFloor = integers[0];
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return theActualFloor;
+        }
+
+
+        @Override
+        protected void onPostExecute(Integer floor) {
+
+
+            TextView floorCount = (TextView) findViewById(R.id.floor_count);
+            floorCount.setText(String.valueOf(currentFloor));
+            //Toast.makeText(this,floor,LENGTH_LONG).show();
+        }
+
+
     }
 }
+
+
+
