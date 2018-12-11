@@ -1,28 +1,28 @@
 package fr.wcs.programmationnonbloquante;
 
-import android.content.Context;
+
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.SystemClock;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static android.widget.Toast.LENGTH_LONG;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private boolean isLiftMoving = false;
+    private int currentFloor = 0;
+    private int floor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         Button button0 = findViewById(R.id.button0);
         Button button1 = findViewById(R.id.button1);
@@ -49,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private boolean isLiftMoving = false;
-    private int currentFloor = 0;
 
     @Override
     public void onClick(View v) {
@@ -91,30 +89,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
     private void goToFloor(int floor) {
-        if (!isLiftMoving && floor != currentFloor) {
-            moveNextFloor(floor);
-            isLiftMoving = false;
-        }
-    }
-
-    private void moveNextFloor(int floor) {
-        if (floor != currentFloor) {
-            isLiftMoving = true;
-            currentFloor = (floor > currentFloor) ? currentFloor + 1 : currentFloor - 1;
-            waitForIt(currentFloor);
-
-            moveNextFloor(floor);
-        }
-    }
-
-    private void waitForIt(int currentFloor) {
         MoveLift mMoveLift = new MoveLift();
-        mMoveLift.execute(currentFloor);
+        mMoveLift.execute(floor);
     }
 
 
-    private class MoveLift extends AsyncTask<Integer, Void, Integer> {
+    private class MoveLift extends AsyncTask<Integer, Integer, Integer> {
+
+        TextView floorCount = (TextView) findViewById(R.id.floor_count);
 
 
         @Override
@@ -126,28 +110,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected Integer doInBackground(Integer... integers) {
 
-            int theActualFloor = integers[0];
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return theActualFloor;
-        }
+            floor = integers[0];
 
+            if (!isLiftMoving && floor != currentFloor) {
+                isLiftMoving = true;
+
+                while (currentFloor != floor) {
+
+                    currentFloor = (floor > currentFloor) ? currentFloor + 1 : currentFloor - 1;
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    publishProgress(currentFloor);
+                }
+            }
+            isLiftMoving = false;
+            return currentFloor;
+        }
 
         @Override
-        protected void onPostExecute(Integer floor) {
-
-
-            TextView floorCount = (TextView) findViewById(R.id.floor_count);
-            floorCount.setText(String.valueOf(currentFloor));
-            //Toast.makeText(this,floor,LENGTH_LONG).show();
+        protected void onProgressUpdate(Integer ... values) {
+            floorCount.setText(String.valueOf(values[0]));
         }
 
-
+        @Override
+        protected void onPostExecute(Integer currentFloor) {
+        }
     }
 }
+
+
+
+
+
 
 
 
